@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>User Story Generator</title>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            background-color: #121212;
+            color: #e0e0e0;
+            margin: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            text-align: center;
+        }
+        .container {
+            display: flex;
+            gap: 20px;
+            width: 100%;
+            height: 90vh;
+            margin: 20px;
+            flex-wrap: wrap;
+            box-shadow: 0 0 15px rgba(0,0,0,0.5);
+            border-radius: 10px;
+            background: #1e1e1e;
+        }
+        .input-section, .output-section {
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 0 15px rgba(0,0,0,0.3);
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            height: 100%;
+            overflow-y: auto;
+        }
+        .input-section {
+            max-width: 50%;
+        }
+        .output-section {
+            max-width: 50%;
+        }
+        .section-header {
+            margin-bottom: 20px;
+            font-size: 1.5rem;
+            color: #90caf9;
+            border-bottom: 1px solid #333;
+            padding-bottom: 10px;
+            text-align: left;
+        }
+        label {
+            margin-bottom: 5px;
+            font-weight: bold;
+            text-align: left;
+        }
+        textarea {
+            padding: 10px;
+            font-size: 1rem;
+            border: 2px solid #333;
+            border-radius: 6px;
+            transition: border 0.3s;
+            width: 100%;
+            height: 100%; /* Adjusted to 60% of the input section's height */
+            resize: none;
+            box-sizing: border-box;
+            background-color: #1e1e1e;
+            color: #e0e0e0;
+        }
+        textarea:focus {
+            border-color: #90caf9;
+        }
+        button {
+            padding: 10px 20px;
+            background-color: #90caf9;
+            color: #1e1e1e;
+            border: none;
+            border-radius: 6px;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: background-color 0.3s;
+            align-self: flex-start;
+            margin-top: 10px;
+        }
+        button:hover {
+            background-color: #64b5f6;
+        }
+        .output-header {
+            margin-bottom: 10px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .generated-output {
+            padding: 10px;
+            border: 1px solid #333;
+            border-radius: 6px;
+            background-color: #2e2e2e;
+            max-height: calc(100% - 60px);
+            overflow-y: auto;
+            text-align: left;
+            word-wrap: break-word;
+            white-space: pre-wrap;
+            box-sizing: border-box;
+        }
+        #loading {
+            display: none;
+            margin-top: 10px;
+            color: #90caf9;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Input Section -->
+        <div class="input-section">
+            <h1 class="section-header">Input User Story Templates</h1>
+            <form id="userStoryForm">
+                <label for="user_message">User Story Template:</label>
+                <textarea id="user_message" name="user_message" rows="4" placeholder="Describe your user story template here..."></textarea>
+                <button type="button" onclick="submitForm()">Generate Response</button>
+            </form>
+            <div id="loading">Generating your story, please wait...</div>
+        </div>
+        <!-- Output Section -->
+        <div class="output-section">
+            <div class="output-header">
+                <h2 class="section-header">System Generated Output</h2>
+                <button onclick="copyOutput()">Copy</button>
+            </div>
+            <div id="response" class="generated-output"></div>
+        </div>
+    </div>
+    <script>
+        function submitForm() {
+            $('#loading').show(); // Show loading indicator
+            $('#response').hide().html(''); // Clear and hide previous response
+
+            $.ajax({
+                url: "/chat",
+                type: "POST",
+                data: { user_message: $('#user_message').val() },
+                success: function(response) {
+                    $('#loading').hide(); // Hide loading indicator
+                    $('#response').html(response.response).fadeIn('slow'); // Fade in new response
+                },
+                error: function(xhr, status, error) {
+                    $('#loading').hide(); // Hide loading indicator
+                    $('#response').html("An error occurred: " + error).fadeIn('slow');
+                }
+            });
+        }
+
+        function copyOutput() {
+            var outputText = $('#response').text();
+            navigator.clipboard.writeText(outputText).then(() => {
+                alert('Output copied to clipboard');
+            }, (err) => {
+                alert('Failed to copy: ' + err);
+            });
+        }
+    </script>
+</body>
+</html>
